@@ -1,0 +1,196 @@
+/* Tourism Chatbot - Custom CSS */
+
+/* Chat message containers */
+.chat-message {
+    padding: 1.5rem;
+    border-radius: 1.2rem;
+    margin-bottom: 3rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    animation: fadeIn 0.3s ease-in;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    max-width: 70%;
+}
+
+/* User messages */
+.user-message {
+    background: linear-gradient(135deg, #f8f6ba 0%, #764ba2 100%);
+    color: rgb(9, 9, 9);
+    margin-left: 3rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Bot messages */
+.bot-message {
+    background: linear-gradient(135deg, #eee5ef 0%, #ade4f6 100%);
+    color: rgb(6, 6, 6);
+    margin-right: 3rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+}
+
+/* Message avatars */
+.message-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.user-avatar {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.bot-avatar {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+}
+
+/* Input styling */
+.stTextInput > div > div > input {
+    border-radius: 1.5rem;
+    border: 2px solid #e1e8ed;
+    padding: 0.8rem 1.2rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.stTextInput > div > div > input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Title styling */
+.main .block-container h1 {
+    text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+/* Chat input button */
+.stChatInput button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.stChatInput button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbar styling */
+.main .block-container {
+    scrollbar-width: thin;
+    scrollbar-color: #667eea #f1f3f4;
+}
+
+.main .block-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.main .block-container::-webkit-scrollbar-track {
+    background: #f1f3f4;
+    border-radius: 10px;
+}
+
+.main .block-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+/* User avatar sağda */
+.user-message .message-avatar {
+    order: 2;
+}
+
+.user-message > div:not(.message-avatar) {
+    order: 1;
+    text-align: right;
+}
+
+/* Bot avatar solda */
+.bot-message .message-avatar {
+    order: 1;
+}
+
+.bot-message > div:not(.message-avatar) {
+    order: 2;
+    text-align: left;
+}
+/* Responsive design */
+@media (max-width: 768px) {
+    .chat-message {
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+        margin-bottom: 2.5rem;
+        padding: 1.2rem;
+        max-width: 85%;
+    }
+    
+    .user-message {
+        margin-left: 15%;
+        margin-right: 0.5rem;
+    }
+    
+    .bot-message {
+        margin-left: 0.5rem;
+        margin-right: 15%;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .user-message {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    }
+    
+    .bot-message {
+        background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);
+    }
+}
+
+/* Container spacing */
+.main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    max-width: 100%;
+}
+
+/* Chat container */
+.element-container {
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+/* Full width chat area */
+.stChatMessage {
+    width: 100%;
+}
