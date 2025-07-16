@@ -15,14 +15,13 @@ from managers.api_manager import get_api_manager
 # Streamlit config
 st.set_page_config(
     page_title="Tourism Chatbot",
-    page_icon="🤖",
     layout="centered"
 )
 
 # Configuration
-GOOGLE_CLOUD_PROJECT_ID = "fast-haiku-463913-s9"
+GOOGLE_CLOUD_PROJECT_ID =os.getenv("GOOGLE_CLOUD_PROJECT_ID")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "http://localhost:8000")
-MODEL_NAME = "gemini-2.0-flash-lite-001"
+MODEL_NAME = os.getenv("MODEL_NAME", "gemini-2.0-flash-lite-001")
 
 # Dil algılama için seed ayarla
 DetectorFactory.seed = 0
@@ -112,14 +111,14 @@ class GeminiRAGWithMemory:
             results = self.rag_system.search(user_query, top_k=15, threshold=0.1)
             if results:
                 context = self.rag_system.format_for_gemini(results)
-                print(f"📚 RAG: {len(results)} sonuç bulundu")
+                print(f" RAG: {len(results)} sonuç bulundu")
                 return context
             else:
-                print("📚 RAG: İlgili sonuç bulunamadı")
+                print(" RAG: İlgili sonuç bulunamadı")
                 return None
                 
         except Exception as e:
-            print(f"❌ RAG arama hatası: {str(e)}")
+            print(f" RAG arama hatası: {str(e)}")
             return None
     
     def detect_and_set_language(self, user_query):
@@ -129,7 +128,7 @@ class GeminiRAGWithMemory:
         # Dil değişikliği kontrolü
         if detected_lang != self.current_language:
             lang_name = SUPPORTED_LANGUAGES.get(detected_lang, 'Türkçe')
-            print(f"🌍 Dil değişikliği: {self.current_language} -> {detected_lang} ({lang_name})")
+            print(f" Dil değişikliği: {self.current_language} -> {detected_lang} ({lang_name})")
             self.current_language = detected_lang
         
         return detected_lang
@@ -319,14 +318,14 @@ def main():
             try:
                 st.session_state.rag_bot = GeminiRAGWithMemory()
                 
-                # ✅ Instruction Manager İstatistikleri
+                # 
                 stats = st.session_state.rag_bot.instruction_manager.get_instruction_stats()
                 if stats["status"] == "loaded":
                     st.success(f"✅ System ready! Instructions: {stats['languages_supported']} languages, {stats['estimated_tokens']:.0f} tokens")
                 else:
                     st.warning("⚠️ Instructions not fully loaded, using fallback")
                 
-                # ✅ YENİ: API Manager İstatistikleri
+                # 
                 api_stats = st.session_state.rag_bot.api_manager.get_stats()
                 st.info(f"🔧 API Manager: {api_stats['available_functions']} functions loaded")
                 

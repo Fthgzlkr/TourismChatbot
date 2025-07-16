@@ -21,24 +21,13 @@ class InstructionManager:
             if os.path.exists(self.instruction_file):
                 with open(self.instruction_file, 'r', encoding='utf-8') as f:
                     self.instructions_data = json.load(f)
-                print(f"✅ Instructions loaded from {self.instruction_file}")
-                
-                # Token count tahmini
-                sample_instruction = self.get_detailed_system_instruction('tr')
-                estimated_tokens = len(sample_instruction.split()) * 1.3
-                print(f"📊 Estimated instruction tokens: {estimated_tokens:.0f}")
-                
-                if estimated_tokens >= 1024:
-                    print("✅ Instructions are cache-eligible (1024+ tokens)")
-                else:
-                    print("⚠️ Instructions might be too short for caching")
-                    
+                print(f" Instructions loaded from {self.instruction_file}")              
             else:
-                print(f"❌ Instruction file not found: {self.instruction_file}")
+                print(f" Instruction file not found: {self.instruction_file}")
                 self.create_default_instructions()
                 
         except Exception as e:
-            print(f"❌ Error loading instructions: {e}")
+            print(f" Error loading instructions: {e}")
             self.create_default_instructions()
     
     def create_default_instructions(self):
@@ -72,13 +61,15 @@ class InstructionManager:
                 "weather": {
                     "name": "get_weather_data",
                     "description": "Provides weather information",
-                    "usage_guidelines": ["Always specify the city name clearly"]
+                    "usage_guidelines": ["Always specify the city name clearly ,make an inference from the user input"]
                 }
             },
             "behavioral_guidelines": {
                 "conversation_flow": [
                     "Maintain natural, engaging conversations",
-                    "Use conversation history intelligently"
+                    "Use conversation history intelligently",
+                    "Make connections between previous messages"
+                    "Make an place and intent inference between previous messages"
                 ]
             },
             "advanced_features": {
@@ -227,12 +218,13 @@ Greeting Template: "{greeting}"
 8. Maintain helpful and friendly tone throughout interaction
 9. Provide alternative suggestions when primary options unavailable
 10. Include practical travel information (costs, timing, logistics)
+11.When user ask for places like hotels, restaurants ,museums ,hospital first use places api then you can use your own knowladge 
+12. İf user ask for unesco heritages use your knowladge not  places , after you used datas you can use the places api
 
 === SYSTEM METADATA ===
 Version: {self.instructions_data.get('version', '2.0')}
 Last Updated: {self.instructions_data.get('last_updated', datetime.now().strftime('%Y-%m-%d'))}
 Language: {lang_name} ({language})
-Token Optimization: Designed for efficient caching with 1024+ tokens
 Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 Remember: Every response must be in {lang_name} language with perfect cultural adaptation!"""
@@ -272,6 +264,9 @@ CONTEXT & MEMORY:
 - Words like "here/there/burada/orada/hier/là" refer to previously mentioned cities
 - Historical places are connected to cities (Hagia Sophia=Istanbul, Cappadocia=Nevşehir)
 - Don't ask unnecessary location questions, extract from conversation history
+- Use places tools for finding the places in mentioned location or city 
+- İf user ask for unesco heritages use your knowladge not  places , after you used datas you can use the places api
+
 
 FUNCTION CALLS AVAILABLE:
 1. get_weather_data(city_name, time_period) - Weather information
@@ -279,7 +274,7 @@ FUNCTION CALLS AVAILABLE:
 3. get_places_search(query, location, additional_criteria) - Place search
 
 BEHAVIOR:
-- Have natural conversations, don't constantly ask for locations
+- Have natural conversations, don't constantly ask for locations if its not needed
 - Only ask for missing information if really necessary
 - Use context from previous messages intelligently
 - Be helpful, friendly, and culturally appropriate for {lang_name} speakers
@@ -300,7 +295,6 @@ REMEMBER: Always respond in {lang_name} language!"""
             "file_path": self.instruction_file,
             "languages_supported": len(self.instructions_data.get('languages', {})),
             "version": self.instructions_data.get('version', 'unknown'),
-            "estimated_tokens": len(sample.split()) * 1.3,
             "character_count": len(sample),
             "cache_eligible": len(sample.split()) * 1.3 >= 1024
         }

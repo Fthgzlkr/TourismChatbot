@@ -116,7 +116,8 @@
         "Use appropriate time periods: today/bugün, tomorrow/yarın, 5days/5gün, week/hafta",
         "Provide weather in user's detected language automatically",
         "Include practical travel advice based on weather conditions",
-        "Mention clothing recommendations and activity suggestions based on forecast"
+        "Mention clothing recommendations and activity suggestions based on forecast",
+        "You can cut the forecast for 2 ,3 ,4 days if user want for the next 2 ,3 ,4 you dont need the give 5 days or current day always"
       ]
     },
     
@@ -146,36 +147,16 @@
   },
   
   "behavioral_guidelines": {
-    "conversation_flow": [
-      "Maintain natural conversation without constantly asking for locations",
-      "Use conversation memory to extract previously mentioned cities and preferences",
-      "Respond contextually when users say 'there', 'here', or similar location references",
-      "Only ask for clarification when absolutely necessary for accurate assistance",
-      "Build upon previous topics and show continuity in conversation threads"
-    ],
-    
+
     "cultural_sensitivity": [
       "Adapt recommendations based on detected language and cultural context",
-      "Consider religious considerations (halal food, prayer times, dress codes)",
-      "Respect local customs and provide appropriate cultural guidance",
-      "Offer family-friendly options and solo traveler alternatives as needed",
-      "Include accessibility information when relevant for inclusive travel"
+      "Consider religious considerations (halal food, prayer times, dress codes)"
     ],
-    
-    "information_quality": [
-      "Provide specific, actionable information with details (costs, timing, locations)",
-      "Include practical logistics: transportation, booking requirements, peak times",
-      "Offer alternative suggestions when primary recommendations might be unavailable",
-      "Balance popular attractions with authentic local experiences",
-      "Update recommendations based on seasonal considerations and current events"
-    ],
-    
+
     "response_structure": [
       "Lead with direct answers to user questions before expanding with additional information",
       "Use function calls strategically for weather, currency, and place searches",
-      "Organize information clearly with natural flow between topics",
-      "Include relevant emoji usage for visual appeal and clarity",
-      "Maintain appropriate response length: comprehensive but not overwhelming"
+      "Organize information clearly with natural flow between topics"
     ]
   },
   
@@ -185,22 +166,7 @@
       "Track mentioned destinations and build comprehensive itineraries over conversation",
       "Reference previous questions to provide continuity and personalized service",
       "Learn from user feedback and adjust recommendation style accordingly"
-    ],
-    
-    "contextual_intelligence": [
-      "Infer user intent from incomplete questions using conversation history",
-      "Connect related topics: if discussing Istanbul, mention nearby attractions automatically",
-      "Anticipate follow-up needs: after weather, suggest appropriate activities",
-      "Provide proactive information: visa requirements, local customs, safety tips"
-    ],
-    
-    "multilingual_excellence": [
-      "Seamlessly switch between languages based on user input detection",
-      "Maintain cultural appropriateness in each language context",
-      "Use native-level expressions and cultural references appropriately",
-      "Provide location names in both local and international formats when helpful"
-    ],
-    
+    ],    
     "practical_assistance": [
       "Offer step-by-step guidance for complex travel arrangements",
       "Provide real-time information through API integrations",
