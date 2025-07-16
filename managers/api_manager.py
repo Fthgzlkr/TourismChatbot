@@ -1,4 +1,4 @@
-# api_manager.py - Universal API Manager
+# api_manager.py - Universal API Manager with Directions Support - FIXED
 import requests
 import streamlit as st
 from typing import Dict, Any, List, Optional
@@ -6,7 +6,7 @@ from google.genai import types
 import json
 
 class APIManager:
-    """Tüm webhook API çağrılarını ve function handling'i yöneten tek sınıf"""
+    """Tüm webhook API çağrılarını ve function handling'i yöneten tek sınıf - Directions desteği eklendi"""
     
     def __init__(self, webhook_url: str = "http://localhost:8000"):
         self.webhook_url = webhook_url
@@ -15,23 +15,120 @@ class APIManager:
         self._load_functions()
     
     def _load_functions(self):
-        """Webhook'tan mevcut function'ları otomatik yükle"""
+        """Webhook'tan mevcut function'ları otomatik yükle - FİX: Declarations format"""
         try:
+            print(f"🔧 DEBUG: Trying to load functions from {self.webhook_url}/functions")
             response = requests.get(f"{self.webhook_url}/functions", timeout=5)
             if response.status_code == 200:
                 functions_data = response.json()
                 self.available_functions = functions_data.get("functions", {})
-                self.function_declarations = functions_data.get("declarations", [])
-                print(f"✅ API Manager: {len(self.available_functions)} function loaded")
+                
+                # 🔧 FİX: Webhook'tan gelen declarations'ları doğru formata çevir
+                webhook_declarations = functions_data.get("declarations", [])
+                print(f"🔧 DEBUG: Webhook returned {len(webhook_declarations)} declarations")
+                
+                self.function_declarations = []
+                for decl in webhook_declarations:
+                    try:
+                        # Webhook'tan gelen JSON format'ını types.FunctionDeclaration'a çevir
+                        func_decl = self._convert_webhook_declaration_to_types(decl)
+                        if func_decl:
+                            self.function_declarations.append(func_decl)
+                            print(f"✅ DEBUG: Converted declaration: {decl.get('name', 'unknown')}")
+                        else:
+                            print(f"❌ DEBUG: Failed to convert declaration: {decl.get('name', 'unknown')}")
+                    except Exception as e:
+                        print(f"❌ DEBUG: Error converting declaration {decl.get('name', 'unknown')}: {e}")
+                
+                print(f"✅ API Manager: {len(self.available_functions)} functions loaded, {len(self.function_declarations)} declarations converted")
+                
+                # Eğer hiç declaration convert edilmemişse fallback kullan
+                if not self.function_declarations:
+                    print("⚠️ No declarations converted, using fallback")
+                    self._load_fallback_functions()
             else:
-                # Fallback: Manuel function tanımları
+                print(f"❌ DEBUG: Webhook returned status {response.status_code}")
                 self._load_fallback_functions()
         except Exception as e:
             print(f"⚠️ Could not load functions from webhook, using fallback: {str(e)}")
             self._load_fallback_functions()
     
+    def _convert_webhook_declaration_to_types(self, webhook_decl: Dict[str, Any]) -> Optional[types.FunctionDeclaration]:
+        """Webhook'tan gelen JSON declaration'ı types.FunctionDeclaration'a çevir"""
+        try:
+            name = webhook_decl.get("name")
+            description = webhook_decl.get("description", "")
+            parameters = webhook_decl.get("parameters", {})
+            
+            if not name:
+                return None
+            
+            # Parameters'ı types.Schema'ya çevir
+            schema = self._convert_parameters_to_schema(parameters)
+            
+            return types.FunctionDeclaration(
+                name=name,
+                description=description,
+                parameters=schema
+            )
+        except Exception as e:
+            print(f"❌ Declaration conversion error: {e}")
+            return None
+    
+    def _convert_parameters_to_schema(self, params: Dict[str, Any]) -> types.Schema:
+        """Parameters dict'ini types.Schema'ya çevir"""
+        try:
+            # Default schema
+            if not params or params.get("type") != "object":
+                return types.Schema(type=types.Type.OBJECT)
+            
+            properties = {}
+            props = params.get("properties", {})
+            
+            for prop_name, prop_def in props.items():
+                prop_type = prop_def.get("type", "string")
+                prop_desc = prop_def.get("description", "")
+                prop_enum = prop_def.get("enum")
+                
+                # Type mapping
+                type_map = {
+                    "string": types.Type.STRING,
+                    "number": types.Type.NUMBER,
+                    "integer": types.Type.INTEGER,
+                    "boolean": types.Type.BOOLEAN,
+                    "array": types.Type.ARRAY,
+                    "object": types.Type.OBJECT
+                }
+                
+                gemini_type = type_map.get(prop_type, types.Type.STRING)
+                
+                if prop_enum:
+                    properties[prop_name] = types.Schema(
+                        type=gemini_type,
+                        description=prop_desc,
+                        enum=prop_enum
+                    )
+                else:
+                    properties[prop_name] = types.Schema(
+                        type=gemini_type,
+                        description=prop_desc
+                    )
+            
+            required_fields = params.get("required", [])
+            
+            return types.Schema(
+                type=types.Type.OBJECT,
+                properties=properties,
+                required=required_fields
+            )
+        except Exception as e:
+            print(f"❌ Schema conversion error: {e}")
+            return types.Schema(type=types.Type.OBJECT)
+    
     def _load_fallback_functions(self):
-        """Webhook'a erişilemezse fallback function'lar"""
+        """Webhook'a erişilemezse fallback function'lar - Directions eklendi"""
+        print("🔧 DEBUG: Loading fallback functions...")
+        
         self.available_functions = {
             "get_weather_data": {
                 "endpoint": "/api/weather",
@@ -47,10 +144,16 @@ class APIManager:
                 "endpoint": "/api/places",
                 "method": "POST", 
                 "params": ["query", "location", "additional_criteria"]
+            },
+            # YENİ: Directions API eklendi
+            "get_directions": {
+                "endpoint": "/api/directions",
+                "method": "POST",
+                "params": ["origin", "destination", "travel_mode", "language"]
             }
         }
         
-        # Manuel function declarations (mevcut kodunuzdan)
+        # Manuel function declarations (directions eklendi)
         self.function_declarations = [
             types.FunctionDeclaration(
                 name="get_weather_data",
@@ -102,19 +205,53 @@ class APIManager:
                     },
                     required=["query", "location"]
                 )
+            ),
+            # YENİ: Directions function declaration
+            types.FunctionDeclaration(
+                name="get_directions",
+                description="Get driving, walking, or transit directions between two locations. Perfect for navigation in Gaziantep and route planning.",
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
+                    properties={
+                        "origin": types.Schema(
+                            type=types.Type.STRING, 
+                            description="Starting location (e.g., 'Gaziantep Castle', 'my current location', 'hotel')"
+                        ),
+                        "destination": types.Schema(
+                            type=types.Type.STRING, 
+                            description="Destination location (e.g., 'Zeugma Museum', 'İmam Çağdaş Restaurant')"
+                        ),
+                        "travel_mode": types.Schema(
+                            type=types.Type.STRING,
+                            description="Mode of transportation",
+                            enum=["driving", "walking", "transit", "cycling"]
+                        )
+                    },
+                    required=["origin", "destination"]
+                )
             )
         ]
-        print(f"✅ API Manager: Fallback functions loaded")
+        print(f"✅ API Manager: {len(self.function_declarations)} fallback functions loaded (including directions)")
     
     def get_function_declarations(self) -> List[types.FunctionDeclaration]:
         """Gemini için function declarations döndür"""
         return self.function_declarations
     
     def get_tools(self) -> List[types.Tool]:
-        """Gemini için tools listesi döndür"""
+        """Gemini için tools listesi döndür - FİX: Debug ile beraber"""
+        print(f"🔧 DEBUG: get_tools() called, have {len(self.function_declarations)} declarations")
+        
         if self.function_declarations:
-            return [types.Tool(function_declarations=self.function_declarations)]
-        return []
+            for i, decl in enumerate(self.function_declarations):
+                print(f"🔧 DEBUG: Declaration {i}: {decl.name}")
+            
+            # TÜM function declarations'ları tek Tool'da topla
+            tool = types.Tool(function_declarations=self.function_declarations)
+            print(f"🔧 DEBUG: Created tool with {len(tool.function_declarations)} declarations")
+            return [tool]
+        else:
+            print("❌ DEBUG: No function declarations available")
+            return []
     
     def call_webhook_universal(self, endpoint: str, payload: Dict[str, Any], timeout: int = 10) -> Dict[str, Any]:
         """Universal webhook çağrısı - tüm API'ler için tek fonksiyon"""
@@ -145,6 +282,10 @@ class APIManager:
             
             elif function_name == "get_places_search":
                 return self._handle_places(function_args, endpoint)
+            
+            # YENİ: Directions handler eklendi
+            elif function_name == "get_directions":
+                return self._handle_directions(function_args, current_language, endpoint)
             
             else:
                 # Genel işlem - yeni API'ler için
@@ -218,6 +359,59 @@ class APIManager:
         result = self.call_webhook_universal(endpoint, payload, timeout=15)
         return self._format_response(result, "Places")
     
+    # YENİ: Directions handler
+    def _handle_directions(self, args: Dict[str, Any], language: str, endpoint: str) -> str:
+        """Directions API işlemi - Yol tarifi"""
+        origin = args.get("origin")
+        destination = args.get("destination")
+        travel_mode = args.get("travel_mode", "driving")
+        
+        if not origin or not destination:
+            if language == "tr":
+                return "⚠️ Başlangıç ve varış noktası gerekli"
+            else:
+                return "⚠️ Origin and destination required"
+        
+        # Travel mode'u düzelt
+        if travel_mode.lower() not in ["driving", "walking", "transit", "cycling"]:
+            travel_mode = "driving"
+        
+        # Türkçe modları İngilizce'ye çevir
+        mode_translations = {
+            "araba": "driving",
+            "arabayla": "driving", 
+            "yürüyerek": "walking",
+            "yürüyüş": "walking",
+            "toplu taşıma": "transit",
+            "otobüs": "transit",
+            "bisiklet": "cycling",
+            "bisikletle": "cycling"
+        }
+        
+        travel_mode = mode_translations.get(travel_mode.lower(), travel_mode)
+        
+        # UI için mode simgesi
+        mode_icons = {
+            "driving": "🚗",
+            "walking": "🚶",
+            "transit": "🚌", 
+            "cycling": "🚴"
+        }
+        
+        mode_icon = mode_icons.get(travel_mode, "🗺️")
+        
+        st.info(f"{mode_icon} Getting directions from **{origin}** to **{destination}** ({travel_mode})...")
+        
+        payload = {
+            "origin": origin,
+            "destination": destination,
+            "travel_mode": travel_mode,
+            "language": language
+        }
+        
+        result = self.call_webhook_universal(endpoint, payload, timeout=15)
+        return self._format_response(result, "Directions")
+    
     def _handle_generic(self, args: Dict[str, Any], endpoint: str, function_name: str) -> str:
         """Genel API işlemi - yeni API'ler için"""
         st.info(f"🔧 Calling {function_name}...")
@@ -244,7 +438,8 @@ class APIManager:
             "webhook_url": self.webhook_url,
             "available_functions": len(self.available_functions),
             "function_names": list(self.available_functions.keys()),
-            "declarations_loaded": len(self.function_declarations)
+            "declarations_loaded": len(self.function_declarations),
+            "directions_enabled": "get_directions" in self.available_functions
         }
     
     def reload_functions(self):

@@ -18,7 +18,6 @@ class PlacesService:
                 "no_places_found": "için yer bulunamadı",
                 "places_found": "için {} yer bulundu",
                 "total_results": "toplam {} sonuçtan ilk {}",
-                "address": "Adres",
                 "rating": "Değerlendirme",
                 "price": "Fiyat",
                 "open": "Açık",
@@ -33,7 +32,6 @@ class PlacesService:
                 "no_places_found": "No places found for",
                 "places_found": "Found {} places for",
                 "total_results": "showing first {} of {} total results",
-                "address": "Address",
                 "rating": "Rating",
                 "price": "Price",
                 "open": "Open",
@@ -48,7 +46,6 @@ class PlacesService:
                 "no_places_found": "Keine Orte gefunden für",
                 "places_found": "{} Orte gefunden für",
                 "total_results": "zeige erste {} von {} Gesamtergebnissen",
-                "address": "Adresse",
                 "rating": "Bewertung",
                 "price": "Preis",
                 "open": "Geöffnet",
@@ -63,7 +60,6 @@ class PlacesService:
                 "no_places_found": "Aucun lieu trouvé pour",
                 "places_found": "{} lieux trouvés pour",
                 "total_results": "affichage des {} premiers sur {} résultats totaux",
-                "address": "Adresse",
                 "rating": "Note",
                 "price": "Prix",
                 "open": "Ouvert",
@@ -78,7 +74,6 @@ class PlacesService:
                 "no_places_found": "No se encontraron lugares para",
                 "places_found": "Se encontraron {} lugares para",
                 "total_results": "mostrando los primeros {} de {} resultados totales",
-                "address": "Dirección",
                 "rating": "Calificación",
                 "price": "Precio",
                 "open": "Abierto",
@@ -93,7 +88,6 @@ class PlacesService:
                 "no_places_found": "Nessun luogo trovato per",
                 "places_found": "Trovati {} luoghi per",
                 "total_results": "mostrando i primi {} di {} risultati totali",
-                "address": "Indirizzo",
                 "rating": "Valutazione",
                 "price": "Prezzo",
                 "open": "Aperto",
@@ -108,7 +102,6 @@ class PlacesService:
                 "no_places_found": "場所が見つかりません",
                 "places_found": "{}件の場所が見つかりました",
                 "total_results": "合計{}件中最初の{}件を表示",
-                "address": "住所",
                 "rating": "評価",
                 "price": "価格",
                 "open": "営業中",
@@ -123,7 +116,6 @@ class PlacesService:
                 "no_places_found": "لم يتم العثور على أماكن لـ",
                 "places_found": "تم العثور على {} أماكن لـ",
                 "total_results": "عرض أول {} من {} نتيجة إجمالية",
-                "address": "العنوان",
                 "rating": "التقييم",
                 "price": "السعر",
                 "open": "مفتوح",
@@ -138,7 +130,6 @@ class PlacesService:
                 "no_places_found": "Места не найдены для",
                 "places_found": "Найдено {} мест для",
                 "total_results": "показаны первые {} из {} общих результатов",
-                "address": "Адрес",
                 "rating": "Рейтинг",
                 "price": "Цена",
                 "open": "Открыто",
@@ -153,7 +144,6 @@ class PlacesService:
                 "no_places_found": "未找到地点",
                 "places_found": "找到{}个地点",
                 "total_results": "显示总共{}个结果中的前{}个",
-                "address": "地址",
                 "rating": "评分",
                 "price": "价格",
                 "open": "营业中",
@@ -268,7 +258,6 @@ class PlacesService:
         for place in data.get("results", [])[:5]:  # İlk 5 sonuç
             place_info = {
                 "name": place.get("name"),
-                "address": place.get("formatted_address"),
                 "rating": place.get("rating"),
                 "price_level": place.get("price_level"),
                 "types": place.get("types", [])[:3],
@@ -314,8 +303,7 @@ class PlacesService:
         
         for i, place in enumerate(places, 1):
             response += f"**{i}. {place['name']}**\n"
-            if place.get('address'):
-                response += f"   📍 {place['address']}\n"
+           
             if place.get('rating'):
                 response += f"   ⭐ {ui_text['rating']}: {place['rating']}/5\n"
             if place.get('price_level') is not None:
